@@ -3,7 +3,6 @@ import Livestock from '../models/livestockModel.mjs';
 export const createLivestock = async (req, res) => {
     try {
        req.body["rem_quantity"] = req.body["quantity"];
-       console.log(req.body, "req.body")
         const livestock = new Livestock(req.body);
         await livestock.save();
         res.status(201).json(livestock);
@@ -37,7 +36,6 @@ export const getLivestockById = async (req, res) => {
 export const updateLivestock = async (req, res) => {
     try {
         const livestock = await Livestock.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        console.log(livestock, "live")
         if (!livestock) {
             return res.status(404).json({ message: 'Livestock not found' });
         }
