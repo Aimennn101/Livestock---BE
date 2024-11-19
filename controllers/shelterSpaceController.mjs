@@ -16,17 +16,29 @@ export const addShelterSpace = async (req, res) => {
 export const getAllShelterSpace = async (req, res) => {
     const {id} =req.params;
     try {
-        const resource = await ShelterSpace.find({}).populate("livestock_id");
-        const updatedShelterSpaces = await Promise.all(resource.map(async (space) => {
-            const purchase = await UserPurchase.findOne({ shelterspace_id: space._id, user_id: new mongoose.Types.ObjectId(id) });
-
-            const updatedSpace = {
-                ...space.toObject(),
-                purchased: purchase ? 1 : 0
-            };
-
-            return updatedSpace;
-        }));
+        const updatedShelterSpaces = await ShelterSpace.aggregate([
+            {
+                $lookup: {
+                    from: 'livestocks', // The name of the Livestock collection in MongoDB
+                    localField: 'livestock_id',
+                    foreignField: '_id',
+                    as: 'livestock'
+                }
+            },
+            {
+                $unwind: '$livestock' // Unwind the populated livestock array to treat it as a single object
+            },
+            {
+                $match: {
+                    'livestock.rem_quantity': { $gt: 0 } // Filter based on rem_quantity in Livestock
+                }
+            },
+            {
+                $addFields: {
+                    livestock_id: '$livestock' // Reassign livestock data to livestock_id for the populated effect
+                }
+            },
+        ]);
         res.status(201).json(updatedShelterSpaces);
     } catch (error) {
         res.status(400).json({error: error.message});

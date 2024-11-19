@@ -1,5 +1,6 @@
 import UserPurchase from "../models/userPurchase.mjs";
 import AddToCart from "../models/addToCart.mjs";
+import Livestock from "../models/livestockModel.mjs";
 import mongoose from "mongoose";
 
 export const getUserPurchasedItems = async (req, res) => {
@@ -23,7 +24,7 @@ export const getUserPurchasedItems = async (req, res) => {
 }
 
 export const purchaseItem = async (req, res) => {
-    const { user_id, shelter_id, quant, cart_id, live } = req.body;
+    const { user_id, shelter_id, quant, cart_id, livestock_id } = req.body;
     try {
         const purchase = new UserPurchase({
             user_id: user_id,
@@ -32,9 +33,13 @@ export const purchaseItem = async (req, res) => {
         });
         await purchase.save();
 
-        const deleted = await AddToCart.deleteOne({_id: new mongoose.Types.ObjectId(cart_id)});
-        console.log(deleted);
+        await Livestock.updateOne(
+            { _id: new mongoose.Types.ObjectId(livestock_id) },
+            { $inc: { rem_quantity: -parseInt(quant, 10) } }
+        );        
 
+       await AddToCart.deleteOne({_id: new mongoose.Types.ObjectId(cart_id)});
+        
         res.status(200).json({message: "Item Purchased Successfully", purchased: 1});
     }
     catch(error) {
