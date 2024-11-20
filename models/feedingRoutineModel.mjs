@@ -12,7 +12,7 @@ const feedingRoutineSchema = new mongoose.Schema({
         required: true
     },
     feeding_time: {
-        type: Date,
+        type: String,
         required: true
     },
     feed_type: {
