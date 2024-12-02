@@ -10,6 +10,10 @@ const addToCartSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "ShelterSpace",
         required: true
+    },
+    created_at: {
+        type: Date,
+        default: Date.now
     }
 
 });
